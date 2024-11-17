@@ -11,7 +11,8 @@ module View (
     fileManagementView,
     uploadFileView,
     printSuccessView,
-    printFieldView) where
+    printFieldView,
+    historyView) where
 
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as A
@@ -164,7 +165,7 @@ printFieldView file = baseView $ do
         contentSpacing $ do
             H.h1 "Print files"
             H.h6 $ "File: " <> (H.toHtml.pack $ file)
-            H.form H.! A.method "GET" H.! A.action "/PrintingSuccess" $ do
+            H.form H.! A.method "POST" H.! A.action "/PrintingSuccess" $ do
                 H.div H.! A.class_ "form-group" $ do
                     H.label $ "Number of copies"
                     H.input H.! A.type_ "number" H.! A.class_ "form-control" H.! A.name "copies"
@@ -177,6 +178,27 @@ printSuccessView = baseView $ do
         ribbonView
         contentSpacing $ do
             H.h1 "Printing Success"
+
+historyView :: [PrintData] -> H.Html
+historyView print_list = baseView $ do
+    noBackgroundView $ do
+        buttonBar ["Home", "Print", "History", "Purchase"]
+        ribbonView
+        contentSpacing $ do
+            H.h1 "History"
+            H.table H.! A.class_ "table" $ do
+                H.tr $ do
+                    H.td $ "File"
+                    H.td $ "Print time"
+                    H.td $ "Copies"
+                concatM [\_ -> itemDiv print_data | print_data <- print_list] ()
+        
+        where 
+            itemDiv print_data = H.tr $ do
+                H.td $ H.toHtml $ filepath print_data
+                H.td $ H.toHtml $ printTime print_data
+                H.td $ H.toHtml $ numCopies print_data
+            
 
 -- Utility objects
 ribbonView :: H.Html

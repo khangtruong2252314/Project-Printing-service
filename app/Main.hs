@@ -19,6 +19,7 @@ import qualified Database as DB
 main :: IO ()
 main = do
     database <- DB.init_database
+    print_database <- DB.init_print_database
     urlsR <- newIORef (1 :: Int, mempty :: Map Int Text)
     scotty 3000 $ do
         get "/" $ do
@@ -61,4 +62,5 @@ main = do
         uploadFileFormRoute database
         uploadFileRoute
         printFieldRoute
-        printingSuccessRoute
+        printingSuccessRoute print_database
+        historyRoute print_database

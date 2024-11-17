@@ -12,7 +12,8 @@ module Lib(
     uploadFileFormRoute,
     uploadFileRoute,
     printFieldRoute,
-    printingSuccessRoute) where
+    printingSuccessRoute,
+    historyRoute) where
 
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Web.Scotty
@@ -115,10 +116,23 @@ logoutRoute = get "/logout" $ do
 printFieldRoute :: ScottyM ()
 printFieldRoute = get "/PrintField/:path" $ do 
     path <- (captureParam "path" :: ActionM String)
+    setForeverCookie "filepath" path
     html.renderHtml $ printFieldView path
 
-printingSuccessRoute :: ScottyM ()
-printingSuccessRoute = get "/PrintingSuccess" $ html.renderHtml $ printSuccessView
+printingSuccessRoute :: IORef [PrintData] -> ScottyM ()
+printingSuccessRoute ref = post "/PrintingSuccess" $ do
+    copies <- (formParam "copies" :: ActionM String)
+    fileCookie <- getCookie "filepath"
+    case fileCookie of
+        Just cookie -> do
+            liftIO $ modifyIORef ref $ \data_ -> data_ ++ [PrintData (unpack cookie) "Unknown" (read copies)]
+        Nothing -> redirect "/login"
+    html.renderHtml $ printSuccessView
+
+historyRoute :: IORef [PrintData] -> ScottyM ()
+historyRoute ref = get "/History" $ do
+    data_ <- liftIO $ readIORef ref
+    html.renderHtml $ historyView data_
 
 -- Utility
 
