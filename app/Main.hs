@@ -60,3 +60,5 @@ main = do
         paperManagementFormRoute database 
         uploadFileFormRoute database
         uploadFileRoute
+        printFieldRoute
+        printingSuccessRoute

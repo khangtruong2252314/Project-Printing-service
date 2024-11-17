@@ -9,7 +9,9 @@ module View (
     paperManagementView,
     paperManagementSuccessView,
     fileManagementView,
-    uploadFileView) where
+    uploadFileView,
+    printSuccessView,
+    printFieldView) where
 
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as A
@@ -154,6 +156,27 @@ paperManagementSuccessView number datetime = baseView $ do
             H.h6 $ "Pages number: " <> (H.toHtml.pack.show $ number)
             H.h6 $ "Next providing date: " <> (H.toHtml.pack $ datetime)
 
+printFieldView :: String -> H.Html
+printFieldView file = baseView $ do
+    noBackgroundView $ do
+        buttonBar ["Home", "Print", "History", "Purchase"]
+        ribbonView
+        contentSpacing $ do
+            H.h1 "Print files"
+            H.h6 $ "File: " <> (H.toHtml.pack $ file)
+            H.form H.! A.method "GET" H.! A.action "/PrintingSuccess" $ do
+                H.div H.! A.class_ "form-group" $ do
+                    H.label $ "Number of copies"
+                    H.input H.! A.type_ "number" H.! A.class_ "form-control" H.! A.name "copies"
+                    H.button H.! A.class_ "btn btn-primary" $ "Submit"
+
+printSuccessView :: H.Html
+printSuccessView = baseView $ do
+    noBackgroundView $ do
+        buttonBar ["Home", "Print", "History", "Purchase"]
+        ribbonView
+        contentSpacing $ do
+            H.h1 "Printing Success"
 
 -- Utility objects
 ribbonView :: H.Html

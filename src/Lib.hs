@@ -10,7 +10,9 @@ module Lib(
     logoutRoute,
     paperManagementFormRoute,
     uploadFileFormRoute,
-    uploadFileRoute) where
+    uploadFileRoute,
+    printFieldRoute,
+    printingSuccessRoute) where
 
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Web.Scotty
@@ -109,6 +111,14 @@ logoutRoute :: ScottyM ()
 logoutRoute = get "/logout" $ do
     deleteCookie "role"
     redirect "/login"
+
+printFieldRoute :: ScottyM ()
+printFieldRoute = get "/PrintField/:path" $ do 
+    path <- (captureParam "path" :: ActionM String)
+    html.renderHtml $ printFieldView path
+
+printingSuccessRoute :: ScottyM ()
+printingSuccessRoute = get "/PrintingSuccess" $ html.renderHtml $ printSuccessView
 
 -- Utility
 
