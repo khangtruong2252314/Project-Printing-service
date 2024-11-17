@@ -4,11 +4,13 @@ module Lib(
     homeRoute, 
     loginRoute, 
     menuRoute, 
-    managePrinterRoute, 
+    printRoute, 
     paperManagementRoute,
     authHomeRoute,
     logoutRoute,
-    paperManagementFormRoute) where
+    paperManagementFormRoute,
+    uploadFileFormRoute,
+    uploadFileRoute) where
 
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Web.Scotty
@@ -38,12 +40,42 @@ menuRoute = get "/menu/:role" $ do
     setForeverCookie "role" role
     html.renderHtml $ menuView.toRole $ role
 
-managePrinterRoute :: ScottyM ()
-managePrinterRoute = get "/Print" $ do 
+managePrinterRoute :: ActionM ()
+managePrinterRoute = html.renderHtml $ managePrinterView
+
+printingRoute :: IORef DatabaseType -> ActionM ()
+printingRoute ref = do
+    db <- liftIO $ readIORef ref
+    let table = db M.! "File management"
+    let filenames = [filename | (filename, printed) <- table, printed /= "True"]
+    html.renderHtml $ fileManagementView filenames
+
+printRoute :: IORef DatabaseType -> ScottyM ()
+printRoute ref = get "/Print" $ do
     cookie <- getCookie "role"
-    case cookie of 
-        Just role -> html.renderHtml $ menuView.toRole.unpack $ role
-        Nothing -> redirect "/login"
+    let role = case cookie of
+                    Just txt -> toRole.unpack $ txt
+                    Nothing -> Guest
+    nextRoute role
+
+    where 
+        nextRoute SPSO = managePrinterRoute
+        nextRoute Student = printingRoute ref
+        nextRoute Guest = redirect "/login"
+
+uploadFileFormRoute :: IORef DatabaseType -> ScottyM ()
+uploadFileFormRoute ref = post "/UploadFile" $ uploadFileHandler ref
+
+uploadFileRoute :: ScottyM ()
+uploadFileRoute = get "/UploadFile" $ html.renderHtml $ uploadFileView
+
+uploadFileHandler :: IORef DatabaseType -> ActionM ()
+uploadFileHandler ref = do
+    db <- liftIO $ readIORef ref
+    path <- formParam "filepath"
+    liftIO $ modifyIORef ref $ M.insert "File management" $ (path, "False") : db M.! "File management"
+    redirect $ "/Print"
+
 
 paperManagementRoute :: IORef DatabaseType -> ScottyM ()
 paperManagementRoute ref = get "/System" $ do

@@ -53,8 +53,10 @@ main = do
         homeRoute  
         loginRoute
         menuRoute
-        managePrinterRoute
+        printRoute database
         paperManagementRoute database
         authHomeRoute
         logoutRoute
         paperManagementFormRoute database 
+        uploadFileFormRoute database
+        uploadFileRoute

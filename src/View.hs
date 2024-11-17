@@ -7,7 +7,9 @@ module View (
     debugView, 
     managePrinterView, 
     paperManagementView,
-    paperManagementSuccessView) where
+    paperManagementSuccessView,
+    fileManagementView,
+    uploadFileView) where
 
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as A
@@ -73,16 +75,14 @@ menuView Guest = H.html $ do
     backgroundView $ do
         ribbonView
 
-managePrinterView :: Role -> H.Html
-managePrinterView role = H.html $ do
+managePrinterView :: H.Html
+managePrinterView = H.html $ do
     backgroundView $ do 
-        buttonBar.menu_list $ role
+        buttonBar menu_list
         ribbonView
     
     where 
-        menu_list SPSO = ["Home", "Print", "History", "System"]
-        menu_list Student = ["Home", "Print", "History", "Purchase"]
-        menu_list Guest = []
+        menu_list = ["Home", "Print", "History", "System"]
 
 paperManagementView :: [(String, String)] -> H.Html
 paperManagementView table = baseView $ do
@@ -116,6 +116,33 @@ paperManagementView table = baseView $ do
             [] -> ("", "")
             ((pages, date):_) -> (date, pages)
 
+fileManagementView :: [String] -> H.Html
+fileManagementView files = baseView $ do
+    noBackgroundView $ do
+        buttonBar ["Home", "Print", "History", "System"]
+        ribbonView
+        contentSpacing $ do
+            H.div $ do
+                H.h1 "File management"
+                H.div H.! A.class_ "list-group" $ do
+                    concatM [\_ -> itemOption file | file <- files] ()
+            H.div H.! A.style "right: 0px; position: absolute" $ do
+                H.button H.! A.class_ "btn btn-primary" H.! A.onclick "window.location.href = '/UploadFile'" $ "Upload"
+    where 
+        itemOption file = H.a H.! A.class_ "list-group-item" H.! A.href ("/PrintField/" <> H.toValue file) $ H.toHtml.pack $ file    
+
+uploadFileView :: H.Html
+uploadFileView = baseView $ do
+    noBackgroundView $ do
+        buttonBar ["Home", "Print", "History", "Purchase"]
+        ribbonView
+        contentSpacing $ do
+            H.h1 "Upload file"
+            H.form H.! A.method "POST" H.! A.action "/UploadFile" $ do
+                H.div H.! A.class_ "form-group" $ do
+                    H.label $ "File path"
+                    H.input H.! A.type_ "text" H.! A.class_ "form-control" H.! A.name "filepath"
+                    H.button H.! A.class_ "btn btn-primary" $ "Submit"
                 
 paperManagementSuccessView :: Int -> String -> H.Html
 paperManagementSuccessView number datetime = baseView $ do
@@ -157,7 +184,7 @@ buttonBar x = do
 
     where 
         button_click row name = do
-            H.div H.! A.id (H.toValue name) H.! A.style ("width: 215px; height: 79px; left: 0px; top:" <> (H.toValue $ show ((row :: Int) * 80 + 130)) <>"px; position: absolute") $ do
+            H.div H.! A.id (H.toValue name) H.! A.style ("width: 215px; height: 79px; left: 0px; top:" <> (H.toValue $ show ((row :: Int) * 80 + 130)) <> "px; position: absolute") $ do
                 H.button H.! A.style "width: 215px; height: 79px; left: 0px; top: 0px; position: absolute; background: #030391; border: 1px #1488D8 solid" H.! A.onclick (H.toValue $ "window.location.href = '/" <> H.toValue name <> "'") $ do
                     H.div H.! A.style "width: 215px; left: 0px; top: 25px; position: absolute; text-align: center; color: white; font-size: 24px; font-family: Inter; font-weight: 400; word-wrap: break-word" $ H.toHtml name
 

@@ -10,6 +10,7 @@ init_database :: IO (IORef C.DatabaseType)
 init_database = do
     database <- newIORef (mempty :: C.DatabaseType)
     modifyIORef database $ M.insert "Paper refill date" mempty
+    modifyIORef database $ M.insert "File management" mempty
     return database
 
 
