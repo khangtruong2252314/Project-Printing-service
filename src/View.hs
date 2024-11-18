@@ -119,7 +119,7 @@ paperManagementView table = baseView $ do
             [] -> ("", "")
             ((pages, date):_) -> (date, pages)
 
-fileManagementView :: [String] -> H.Html
+fileManagementView :: [FileData] -> H.Html
 fileManagementView files = baseView $ do
     noBackgroundView $ do
         buttonBar ["Home", "Print", "History", "System"]
@@ -127,12 +127,22 @@ fileManagementView files = baseView $ do
         contentSpacing $ do
             H.div $ do
                 H.h1 "File management"
-                H.div H.! A.class_ "list-group" $ do
-                    concatM [\_ -> itemOption file | file <- files] ()
+                H.table H.! A.class_ "table" $ do
+                    H.thead $ do
+                        H.tr $ do
+                            H.th H.! A.scope "col" $ "File name"
+                            H.th H.! A.scope "col" $ "Number of pages"
+                    H.tbody $ do
+                        concatM [\_ -> itemOption file | file <- files] ()
             H.div H.! A.style "right: 0px; position: absolute" $ do
                 H.button H.! A.class_ "btn btn-primary" H.! A.onclick "window.location.href = '/UploadFile'" $ "Upload"
     where 
-        itemOption file = H.a H.! A.class_ "list-group-item" H.! A.href ("/PrintField/" <> H.toValue file) $ H.toHtml.pack $ file    
+        itemOption file = do 
+            H.tr $ do
+                H.td $ do
+                    H.a H.! A.href ("/PrintField/" <> (H.toValue.file_name $ file)) $ H.toHtml.pack.file_name $ file    
+                H.td $ do
+                    H.toHtml.show.numPages $ file
 
 uploadFileView :: H.Html
 uploadFileView = baseView $ do
@@ -144,7 +154,9 @@ uploadFileView = baseView $ do
             H.form H.! A.method "POST" H.! A.action "/UploadFile" $ do
                 H.div H.! A.class_ "form-group" $ do
                     H.label $ "File path"
-                    H.input H.! A.type_ "text" H.! A.class_ "form-control" H.! A.name "filepath"
+                    H.input H.! A.type_ "text" H.! A.class_ "form-control" H.! A.name "filepath" H.! A.required "true"
+                    H.label $ "Number of pages"
+                    H.input H.! A.type_ "number" H.! A.class_ "form-control" H.! A.name "numPages" H.! A.required "true"
                     H.button H.! A.class_ "btn btn-primary" $ "Submit"
                 
 paperManagementSuccessView :: Int -> String -> H.Html

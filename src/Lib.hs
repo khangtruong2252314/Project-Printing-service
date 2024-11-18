@@ -21,6 +21,7 @@ import Web.Scotty.Cookie (getCookie, deleteCookie)
 import Web.Cookie (SetCookie(..), defaultSetCookie, renderSetCookie)
 import Data.Text (unpack)
 import Data.IORef (IORef, modifyIORef, readIORef)
+import Data.Time (getCurrentTime, formatTime, defaultTimeLocale)
 import Control.Monad.IO.Class (MonadIO(liftIO))
 import qualified Data.Map as M
 import qualified Data.ByteString.Char8 as BS 
@@ -46,14 +47,12 @@ menuRoute = get "/menu/:role" $ do
 managePrinterRoute :: ActionM ()
 managePrinterRoute = html.renderHtml $ managePrinterView
 
-printingRoute :: IORef DatabaseType -> ActionM ()
+printingRoute :: IORef [FileData] -> ActionM ()
 printingRoute ref = do
-    db <- liftIO $ readIORef ref
-    let table = db M.! "File management"
-    let filenames = [filename | (filename, printed) <- table, printed /= "True"]
+    filenames <- liftIO $ readIORef ref
     html.renderHtml $ fileManagementView filenames
 
-printRoute :: IORef DatabaseType -> ScottyM ()
+printRoute :: IORef [FileData] -> ScottyM ()
 printRoute ref = get "/Print" $ do
     cookie <- getCookie "role"
     let role = case cookie of
@@ -66,17 +65,17 @@ printRoute ref = get "/Print" $ do
         nextRoute Student = printingRoute ref
         nextRoute Guest = redirect "/login"
 
-uploadFileFormRoute :: IORef DatabaseType -> ScottyM ()
+uploadFileFormRoute :: IORef [FileData] -> ScottyM ()
 uploadFileFormRoute ref = post "/UploadFile" $ uploadFileHandler ref
 
 uploadFileRoute :: ScottyM ()
 uploadFileRoute = get "/UploadFile" $ html.renderHtml $ uploadFileView
 
-uploadFileHandler :: IORef DatabaseType -> ActionM ()
+uploadFileHandler :: IORef [FileData] -> ActionM ()
 uploadFileHandler ref = do
-    db <- liftIO $ readIORef ref
     path <- formParam "filepath"
-    liftIO $ modifyIORef ref $ M.insert "File management" $ (path, "False") : db M.! "File management"
+    pages <- formParam "numPages"
+    liftIO $ modifyIORef ref $ (FileData path (read pages :: Int):)
     redirect $ "/Print"
 
 
@@ -123,9 +122,10 @@ printingSuccessRoute :: IORef [PrintData] -> ScottyM ()
 printingSuccessRoute ref = post "/PrintingSuccess" $ do
     copies <- (formParam "copies" :: ActionM String)
     fileCookie <- getCookie "filepath"
+    now <- liftIO getCurrentTime
     case fileCookie of
         Just cookie -> do
-            liftIO $ modifyIORef ref $ \data_ -> data_ ++ [PrintData (unpack cookie) "Unknown" (read copies)]
+            liftIO $ modifyIORef ref $ \data_ -> data_ ++ [PrintData (unpack cookie) (formatTime defaultTimeLocale "%d/%m/%Y" now) (read copies)]
         Nothing -> redirect "/login"
     html.renderHtml $ printSuccessView
 

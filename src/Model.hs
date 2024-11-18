@@ -1,4 +1,4 @@
-module Model(Role(..), toRole, PrintData(..)) where
+module Model(Role(..), toRole, PrintData(..), FileData(..)) where
 
 data Role = Student | SPSO | Guest deriving (Show, Eq)
 
@@ -11,6 +11,11 @@ data PrintData = PrintData {
     filepath :: String,
     printTime :: String,
     numCopies :: Int
+} deriving (Show, Eq)
+
+data FileData = FileData {
+    file_name :: String,
+    numPages :: Int
 } deriving (Show, Eq)
 
 

@@ -1,4 +1,4 @@
-module Database(init_database, init_print_database) where
+module Database(init_database, init_print_database, init_file_database) where
 
 import Data.IORef (IORef, newIORef, modifyIORef)
 import qualified Data.Map as M
@@ -18,6 +18,13 @@ init_print_database :: IO (IORef [PrintData])
 init_print_database = do
     print_database <- newIORef [PrintData "rg.txt" "11/08/2024" 3, PrintData "abc.txt" "30/11/2023" 4]
     return print_database
+
+init_file_database :: IO (IORef [FileData])
+init_file_database = do
+    file_database <- newIORef [FileData "rg.txt" 2, FileData "abc.txt" 5]
+    return file_database
+
+
 
 
 
