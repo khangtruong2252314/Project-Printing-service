@@ -78,14 +78,29 @@ menuView Guest = H.html $ do
     backgroundView $ do
         ribbonView
 
-managePrinterView :: H.Html
-managePrinterView = H.html $ do
-    backgroundView $ do 
+managePrinterView :: [PrinterData] -> H.Html
+managePrinterView printer_data = baseView $ do
+    noBackgroundView $ do 
         buttonBar menu_list
         ribbonView
-    
+        contentSpacing.table $ printer_data
     where 
         menu_list = ["Home", "Print", "History", "System"]
+        row item = H.tr $ do
+            H.td $ do
+                H.div $ do
+                    H.a H.! A.href (("/Printer?printer=" <>).H.toValue.printer_name $ item) $ do
+                        H.toHtml.printer_name $ item
+            H.td $ do
+                H.div $ do
+                    H.toHtml.printer_location $ item
+        table items = H.table H.! A.class_ "table" $ do
+            H.tbody $ do
+                H.thead $ do
+                    H.tr $ do
+                        H.th H.! A.scope "col" $ "Printer name"
+                        H.th H.! A.scope "col" $ "Location"
+                mapM_ row items
 
 paperManagementView :: [(String, String)] -> H.Html
 paperManagementView table = baseView $ do

@@ -12,12 +12,13 @@ main = do
     database <- DB.init_database
     print_database <- DB.init_print_database
     file_database <- DB.init_file_database
+    printer_database <- DB.init_printer_database
     scotty 3000 $ do
         
         homeRoute  
         loginRoute
         menuRoute
-        printRoute file_database 
+        printRoute printer_database file_database 
         paperManagementRoute database
         authHomeRoute
         logoutRoute

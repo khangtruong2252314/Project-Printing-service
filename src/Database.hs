@@ -1,4 +1,8 @@
-module Database(init_database, init_print_database, init_file_database) where
+module Database(
+    init_database, 
+    init_print_database, 
+    init_file_database,
+    init_printer_database) where
 
 import Data.IORef (IORef, newIORef, modifyIORef)
 import qualified Data.Map as M
@@ -23,6 +27,11 @@ init_file_database :: IO (IORef [FileData])
 init_file_database = do
     file_database <- newIORef [FileData "rg.txt" 2, FileData "abc.txt" 5]
     return file_database
+
+init_printer_database :: IO (IORef [PrinterData])
+init_printer_database = do
+    printer_database <- newIORef [PrinterData "Printer 1" "A1" True True, PrinterData "Printer 2" "H1" True True]
+    return printer_database
 
 
 

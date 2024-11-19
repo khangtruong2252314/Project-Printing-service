@@ -44,16 +44,18 @@ menuRoute = get "/menu/:role" $ do
     setForeverCookie "role" role
     html.renderHtml $ menuView.toRole $ role
 
-managePrinterRoute :: ActionM ()
-managePrinterRoute = html.renderHtml $ managePrinterView
+managePrinterRoute :: IORef [PrinterData] -> ActionM ()
+managePrinterRoute ref = do
+    printers <- liftIO $ readIORef ref
+    html.renderHtml $ managePrinterView printers
 
 printingRoute :: IORef [FileData] -> ActionM ()
 printingRoute ref = do
     filenames <- liftIO $ readIORef ref
     html.renderHtml $ fileManagementView filenames
 
-printRoute :: IORef [FileData] -> ScottyM ()
-printRoute ref = get "/Print" $ do
+printRoute :: IORef [PrinterData] -> IORef [FileData] -> ScottyM ()
+printRoute ref_printer ref_file = get "/Print" $ do
     cookie <- getCookie "role"
     let role = case cookie of
                     Just txt -> toRole.unpack $ txt
@@ -61,8 +63,8 @@ printRoute ref = get "/Print" $ do
     nextRoute role
 
     where 
-        nextRoute SPSO = managePrinterRoute
-        nextRoute Student = printingRoute ref
+        nextRoute SPSO = managePrinterRoute ref_printer
+        nextRoute Student = printingRoute ref_file
         nextRoute Guest = redirect "/login"
 
 uploadFileFormRoute :: IORef [FileData] -> ScottyM ()
