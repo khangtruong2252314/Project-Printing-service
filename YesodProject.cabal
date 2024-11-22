@@ -27,6 +27,7 @@ library
   exposed-modules:
       Config
       Database
+      Default
       Lib
       Model
       View

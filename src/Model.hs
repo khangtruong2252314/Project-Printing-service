@@ -3,7 +3,8 @@ module Model(
     Role(..), 
     PrintData(..), 
     FileData(..), 
-    PrinterData(..)) where
+    PrinterData(..),
+    UserData(..)) where
 
 data Role = Student | SPSO | Guest deriving (Show, Eq)
 
@@ -26,8 +27,16 @@ data FileData = FileData {
 data PrinterData = PrinterData {
     printer_name :: String,
     printer_location :: String,
-    available :: Bool,
-    activated :: Bool
-}
+    printer_available :: Bool,
+    printer_activated :: Bool
+} deriving (Show, Eq)
+
+data UserData = UserData {
+    account_username :: String,
+    account_password :: String,
+    account_role :: Role,
+    account_balance :: Int
+} deriving (Show, Eq)
+
 
 

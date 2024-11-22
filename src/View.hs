@@ -12,7 +12,9 @@ module View (
     uploadFileView,
     printSuccessView,
     printFieldView,
-    historyView) where
+    historyView,
+    printerView,
+    baffleView) where
 
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as A
@@ -36,7 +38,7 @@ homeView = H.html $ do
                     H.img H.! A.style "width: 82.26px; height: 96.28px; left: 26px; top: 10px; position: absolute" H.! A.src "https://lms.hcmut.edu.vn/pluginfile.php/3/theme_academi/logo/1725955904/logoBK.png"
                     H.div H.! A.style "width: 895px; height: 77px; left: 128px; top: 29px; position: absolute; color: white; font-size: 39px; font-family: Roboto; font-weight: 700; line-height: 24px; letter-spacing: 0.50px; word-wrap: break-word" $ "Ho Chi Minh University of Technology"
                 H.div H.! A.style "width: 69px; height: 29px; left: 1337px; top: 53px; position: absolute; background: #030391; justify-content: center; align-items: center; display: inline-flex" $ do 
-                    H.div H.! A.style "color: white; font-size: 24px; font-family: Inter; font-weight: 400; word-wrap: break-word" $ "Login"
+                    H.a H.! A.href "/login" H.! A.style "color: white; font-size: 24px; font-family: Inter; font-weight: 400; word-wrap: break-word" $ "Login"
                 H.div H.! A.style "width: 752px; height: 274px; left: 26px; top: 375px; position: absolute" $ do 
                     H.div H.! A.style "width: 752px; height: 274px; left: 0px; top: 0px; position: absolute; opacity: 0.48; background: black" $ ""
                     H.div H.! A.style "left: 41px; top: 39px; position: absolute; color: white; font-size: 72px; font-family: Noto Sans Malayalam; font-weight: 700; word-wrap: break-word" $ do 
@@ -45,22 +47,18 @@ homeView = H.html $ do
                         "Printing Service"
 
 loginView :: H.Html 
-loginView = H.html $ do
-    H.div H.! A.style "width: 100%; height: 100%; position: relative; background: white" $ do
-        H.div H.! A.style "width: 1440px; height: 128px; left: 0px; top: 0px; position: absolute; background: #030391" $ ""
-        H.img H.! A.style "width: 307.26px; height: 359.62px; left: 566px; top: 231px; position: absolute" H.! A.src "https://lms.hcmut.edu.vn/pluginfile.php/3/theme_academi/logo/1725955904/logoBK.png"
-        H.div H.! A.style "width: 319px; height: 131px; left: 247px; top: 591px; position: absolute" $ do
-            H.div H.! A.style "width: 319px; height: 131px; left: 0px; top: 0px; position: absolute; background: #1488D8; border-radius: 97px; border: 1px #1488D8 solid" $ ""
-            H.button H.! A.style "left: 109px; top: 19px; position: absolute; text-align: center; color: white; font-size: 38px; font-family: Playfair Display; font-weight: 700; line-height: 47px; letter-spacing: 0.10px; word-wrap: break-word; background: #1488D8;" H.! A.onclick "window.location.href = '/menu/spso'" $ do 
-                "For"
-                H.br 
-                "SPSO"
-        H.div H.! A.style "width: 319px; height: 131px; left: 873px; top: 591px; position: absolute" $ do 
-            H.div H.! A.style "width: 319px; height: 131px; left: 0px; top: 0px; position: absolute; background: #1488D8; border-radius: 97px; border: 1px #1488D8 solid" $ ""
-            H.button H.! A.style "left: 91px; top: 19px; position: absolute; text-align: center; color: white; font-size: 38px; font-family: Playfair Display; font-weight: 700; line-height: 47px; letter-spacing: 0.10px; word-wrap: break-word; background: #1488D8;" H.! A.onclick "window.location.href = '/menu/student'" $ do
-                "For"
-                H.br 
-                "Student"
+loginView = baseView $ do
+    noBackgroundView $ do
+        guestRibbonView
+        contentSpacing $ do
+            H.h1 "Login"
+            H.form H.! A.method "POST" H.! A.action "/Auth" $ do
+                H.div H.! A.class_ "form-group" $ do
+                    H.label $ "Username"
+                    H.input H.! A.type_ "text" H.! A.class_ "form-control" H.! A.name "username" H.! A.required "true"
+                    H.label $ "Password"
+                    H.input H.! A.type_ "password" H.! A.class_ "form-control" H.! A.name "password" H.! A.required "true"
+                    H.button H.! A.class_ "btn btn-primary" $ "Submit"
 
 menuView :: Role -> H.Html
 menuView SPSO = H.html $ do
@@ -184,15 +182,16 @@ paperManagementSuccessView number datetime = baseView $ do
             H.h6 $ "Pages number: " <> (H.toHtml.pack.show $ number)
             H.h6 $ "Next providing date: " <> (H.toHtml.pack $ datetime)
 
-printFieldView :: String -> H.Html
-printFieldView file = baseView $ do
+printFieldView :: String -> Int -> UserData -> H.Html
+printFieldView file pages user_data = baseView $ do
     noBackgroundView $ do
         buttonBar ["Home", "Print", "History", "Purchase"]
         ribbonView
         contentSpacing $ do
             H.h1 "Print files"
             H.h6 $ "File: " <> (H.toHtml.pack $ file)
-            H.form H.! A.method "POST" H.! A.action "/PrintingSuccess" $ do
+            H.h6 $ "Account balance: " <> (H.toHtml.pack.show $ account_balance user_data)
+            H.form H.! A.method "POST" H.! A.action ("/PrintingSuccess?path=" <> (H.toValue.pack $ file) <> "&&num_page=" <> (H.toValue $ pages)) $ do
                 H.div H.! A.class_ "form-group" $ do
                     H.label $ "Number of copies"
                     H.input H.! A.type_ "number" H.! A.class_ "form-control" H.! A.name "copies"
@@ -225,7 +224,31 @@ historyView print_list = baseView $ do
                 H.td $ H.toHtml $ filepath print_data
                 H.td $ H.toHtml $ printTime print_data
                 H.td $ H.toHtml $ numCopies print_data
-            
+
+printerView :: PrinterData -> H.Html
+printerView printer_data = baseView $ do
+    noBackgroundView $ do
+        buttonBar ["Home", "Print", "History", "System"]
+        ribbonView
+        contentSpacing $ do
+            H.h1 "Printer"
+            H.h6 $ "Name: " <> (H.toHtml.pack.printer_name $ printer_data)
+            H.h6 $ "Activated: " <> (H.toHtml.pack.show.printer_activated $ printer_data)
+            H.h6 $ "Location: " <> (H.toHtml.pack.printer_location $ printer_data)
+            H.form H.! A.method "POST" H.! A.action "/UpdatePrinter" $ do
+                H.div H.! A.class_ "form-check" $ do
+                    H.label H.! A.class_ "form-check-label" $ "Activation"
+                    H.input H.! A.type_ "radio" H.! A.class_ "form-check-input" H.! A.name "activation" H.! A.value "Activate"
+                H.div H.! A.class_ "form-check" $ do
+                    H.label H.! A.class_ "form-check-label" $ "Deactivation"
+                    H.input H.! A.type_ "radio" H.! A.class_ "form-check-input" H.! A.name "activation" H.! A.value "Deactivate"
+                H.button H.! A.class_ "btn btn-primary" $ "Submit"
+
+baffleView :: H.Html
+baffleView = baseView $ do
+    noBackgroundView $ do
+        contentSpacing $ do
+            H.h1 "Baffle"
 
 -- Utility objects
 ribbonView :: H.Html
@@ -237,6 +260,14 @@ ribbonView = H.html $ do
             H.button H.! A.onclick "window.location.href = '/logout'" H.! A.style "left: 100px; top: 24px; position: absolute; color: white; font-size: 24px; font-family: Inter; font-weight: 400; word-wrap: break-word; background: #1488D8;" $ "Logout"
         H.img H.! A.style "width: 82.26px; height: 96.28px; left: 26px; top: 10px; position: absolute" H.! A.src "https://lms.hcmut.edu.vn/pluginfile.php/3/theme_academi/logo/1725955904/logoBK.png"
         H.div H.! A.style "width: 895px; height: 77px; left: 128px; top: 29px; position: absolute; color: white; font-size: 39px; font-family: Roboto; font-weight: 700; line-height: 24px; letter-spacing: 0.50px; word-wrap: break-word" $ "Ho Chi Minh University of Technology"
+
+guestRibbonView :: H.Html
+guestRibbonView = H.html $ do
+    H.div H.! A.style "width: 1440px; height: 128px; left: 0px; top: 0px; position: absolute" $ do
+        H.div H.! A.style "width: 1550px; height: 128px; left: 0px; top: 0px; position: absolute; background: #030391" $ ""
+        H.img H.! A.style "width: 82.26px; height: 96.28px; left: 26px; top: 10px; position: absolute" H.! A.src "https://lms.hcmut.edu.vn/pluginfile.php/3/theme_academi/logo/1725955904/logoBK.png"
+        H.div H.! A.style "width: 895px; height: 77px; left: 128px; top: 29px; position: absolute; color: white; font-size: 39px; font-family: Roboto; font-weight: 700; line-height: 24px; letter-spacing: 0.50px; word-wrap: break-word" $ "Ho Chi Minh University of Technology"
+
 
 backgroundView :: H.Html -> H.Html
 backgroundView = do 

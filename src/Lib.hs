@@ -13,7 +13,10 @@ module Lib(
     uploadFileRoute,
     printFieldRoute,
     printingSuccessRoute,
-    historyRoute) where
+    historyRoute,
+    authHandlerRoute,
+    defaultRoute,
+    printerRoute) where
 
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Web.Scotty
@@ -31,6 +34,9 @@ import qualified Data.Text.Lazy.Encoding as TLE
 import Model
 import View
 import Config (DatabaseType)
+
+defaultRoute :: ScottyM ()
+defaultRoute = get "/" $ redirect "/home"
 
 homeRoute :: ScottyM () 
 homeRoute = get "/home" $ html.renderHtml $ homeView
@@ -114,27 +120,78 @@ logoutRoute = get "/logout" $ do
     deleteCookie "role"
     redirect "/login"
 
-printFieldRoute :: ScottyM ()
-printFieldRoute = get "/PrintField/:path" $ do 
+printFieldRoute :: IORef (M.Map String UserData) -> IORef [FileData] -> ScottyM ()
+printFieldRoute userRef fileRef = get "/PrintField/:path" $ do 
     path <- (captureParam "path" :: ActionM String)
-    setForeverCookie "filepath" path
-    html.renderHtml $ printFieldView path
+    maybe_username <- getCookie "username"
+    user_map <- liftIO $ readIORef userRef
+    file_list <- liftIO $ readIORef fileRef
+    let foundFiles = filter ((== path).file_name) file_list
+    direct foundFiles maybe_username user_map
+    
+    where
+        direct [] _ _ = redirect "/Print"
+        direct _ Nothing _ = redirect "/Print"
+        direct (target:_) (Just name) db    | M.member (unpack name) db = html.renderHtml $ printFieldView (file_name target) (numPages target) (db M.! unpack name)
+                                            | otherwise = redirect "/Print"
+    
 
-printingSuccessRoute :: IORef [PrintData] -> ScottyM ()
-printingSuccessRoute ref = post "/PrintingSuccess" $ do
-    copies <- (formParam "copies" :: ActionM String)
-    fileCookie <- getCookie "filepath"
+printingSuccessRoute :: IORef (M.Map String UserData) -> IORef [PrintData] -> ScottyM ()
+printingSuccessRoute user_ref history_ref = post "/PrintingSuccess" $ do
+    copies <- (formParam "copies" :: ActionM Int)
+    path <- (queryParam "path" :: ActionM String)
+    num_page <- (read <$> queryParam "num_page" :: ActionM Int)
+    maybe_username <- getCookie "username"
     now <- liftIO getCurrentTime
-    case fileCookie of
-        Just cookie -> do
-            liftIO $ modifyIORef ref $ \data_ -> data_ ++ [PrintData (unpack cookie) (formatTime defaultTimeLocale "%d/%m/%Y" now) (read copies)]
-        Nothing -> redirect "/login"
+    logHistory now (show copies) path
+    adjustBalance copies num_page maybe_username
     html.renderHtml $ printSuccessView
+
+    where 
+        logHistory now_time num_cp file_path = do
+            liftIO $ modifyIORef history_ref $ \data_ -> data_ ++ [PrintData file_path (formatTime defaultTimeLocale "%d/%m/%Y" now_time) (read num_cp)]
+        adjustBalance num_cp pg (Just username) = liftIO $ do
+            matches_data <- (M.! (unpack username)) <$> readIORef user_ref 
+            modifyIORef user_ref $ M.insert (account_username matches_data) matches_data{account_balance=account_balance matches_data - num_cp * pg}
+        adjustBalance _ _ Nothing = liftIO.pure $ ()
+            
 
 historyRoute :: IORef [PrintData] -> ScottyM ()
 historyRoute ref = get "/History" $ do
     data_ <- liftIO $ readIORef ref
     html.renderHtml $ historyView data_
+
+authHandlerRoute :: IORef (M.Map String UserData) -> ScottyM ()
+authHandlerRoute ref = post "/Auth" $ do
+    username <- (formParam "username" :: ActionM String)
+    password <- (formParam "password" :: ActionM String)
+    database <- liftIO $ readIORef ref
+    case M.lookup username database of 
+        Just acc -> checkPassword acc password $ authSuccess acc
+        Nothing -> redirect "/login"
+    
+    where
+        checkPassword account password nextStep     | account_password account == password = nextStep
+                                                    | otherwise = redirect "/login"
+        authSuccess account = do
+            setForeverCookie "role" (roleToString.account_role $ account)
+            setForeverCookie "username" (account_username account)
+            redirect "/Home"
+        roleToString Student = "student"
+        roleToString SPSO = "spso"
+        roleToString Guest = "guest"
+
+printerRoute :: IORef [PrinterData] -> ScottyM ()
+printerRoute ref = get "/Printer" $ do 
+    database <- liftIO $ readIORef ref
+    parameter <- (queryParam "printer" :: ActionM String)
+    let view = case filter (matched parameter) database of
+                    acc: _ -> printerView acc
+                    _ -> baffleView
+    html.renderHtml $ view
+
+    where 
+        matched parameter data_point = printer_name data_point == parameter
 
 -- Utility
 

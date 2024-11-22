@@ -13,8 +13,10 @@ main = do
     print_database <- DB.init_print_database
     file_database <- DB.init_file_database
     printer_database <- DB.init_printer_database
+    user_database <- DB.init_user_database
+
     scotty 3000 $ do
-        
+        defaultRoute    
         homeRoute  
         loginRoute
         menuRoute
@@ -25,6 +27,8 @@ main = do
         paperManagementFormRoute database 
         uploadFileFormRoute file_database
         uploadFileRoute
-        printFieldRoute
-        printingSuccessRoute print_database
+        printFieldRoute user_database file_database
+        printingSuccessRoute user_database print_database
         historyRoute print_database
+        authHandlerRoute user_database
+        printerRoute printer_database

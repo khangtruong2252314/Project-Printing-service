@@ -2,7 +2,8 @@ module Database(
     init_database, 
     init_print_database, 
     init_file_database,
-    init_printer_database) where
+    init_printer_database,
+    init_user_database) where
 
 import Data.IORef (IORef, newIORef, modifyIORef)
 import qualified Data.Map as M
@@ -32,6 +33,9 @@ init_printer_database :: IO (IORef [PrinterData])
 init_printer_database = do
     printer_database <- newIORef [PrinterData "Printer 1" "A1" True True, PrinterData "Printer 2" "H1" True True]
     return printer_database
+
+init_user_database :: IO (IORef (M.Map String UserData))
+init_user_database = newIORef. M.fromList $ [("demo_spso", UserData "demo_spso" "123" SPSO 0), ("demo_student", UserData "demo_student" "123" Student 15)]
 
 
 
