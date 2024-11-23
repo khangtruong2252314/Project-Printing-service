@@ -32,3 +32,5 @@ main = do
         historyRoute print_database
         authHandlerRoute user_database
         printerRoute printer_database
+        updatePrinterRoute printer_database
+        addPrinterRoute printer_database

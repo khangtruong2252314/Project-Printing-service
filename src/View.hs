@@ -14,7 +14,8 @@ module View (
     printFieldView,
     historyView,
     printerView,
-    baffleView) where
+    baffleView,
+    printerInfoFormView) where
 
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as A
@@ -81,7 +82,9 @@ managePrinterView printer_data = baseView $ do
     noBackgroundView $ do 
         buttonBar menu_list
         ribbonView
-        contentSpacing.table $ printer_data
+        contentSpacing $ do
+            table $ printer_data
+            H.button H.! A.class_ "btn btn-primary" H.! A.onclick "window.location.href = '/AddPrinter'" $ "Add new printer"
     where 
         menu_list = ["Home", "Print", "History", "System"]
         row item = H.tr $ do
@@ -92,12 +95,14 @@ managePrinterView printer_data = baseView $ do
             H.td $ do
                 H.div $ do
                     H.toHtml.printer_location $ item
+            H.td . H.div . H.toHtml.printer_activated $ item
         table items = H.table H.! A.class_ "table" $ do
             H.tbody $ do
                 H.thead $ do
                     H.tr $ do
                         H.th H.! A.scope "col" $ "Printer name"
                         H.th H.! A.scope "col" $ "Location"
+                        H.th H.! A.scope "col" $ "Activated"
                 mapM_ row items
 
 paperManagementView :: [(String, String)] -> H.Html
@@ -135,7 +140,7 @@ paperManagementView table = baseView $ do
 fileManagementView :: [FileData] -> H.Html
 fileManagementView files = baseView $ do
     noBackgroundView $ do
-        buttonBar ["Home", "Print", "History", "System"]
+        buttonBar ["Home", "Print", "History", "Purchase"]
         ribbonView
         contentSpacing $ do
             H.div $ do
@@ -235,20 +240,35 @@ printerView printer_data = baseView $ do
             H.h6 $ "Name: " <> (H.toHtml.pack.printer_name $ printer_data)
             H.h6 $ "Activated: " <> (H.toHtml.pack.show.printer_activated $ printer_data)
             H.h6 $ "Location: " <> (H.toHtml.pack.printer_location $ printer_data)
-            H.form H.! A.method "POST" H.! A.action "/UpdatePrinter" $ do
+            H.form H.! A.method "POST" H.! A.action ("/UpdatePrinter?printer_name=" <> (H.toValue.pack.printer_name $ printer_data)) $ do
                 H.div H.! A.class_ "form-check" $ do
-                    H.label H.! A.class_ "form-check-label" $ "Activation"
                     H.input H.! A.type_ "radio" H.! A.class_ "form-check-input" H.! A.name "activation" H.! A.value "Activate"
+                    H.label H.! A.class_ "form-check-label" $ "Activation"
                 H.div H.! A.class_ "form-check" $ do
-                    H.label H.! A.class_ "form-check-label" $ "Deactivation"
                     H.input H.! A.type_ "radio" H.! A.class_ "form-check-input" H.! A.name "activation" H.! A.value "Deactivate"
+                    H.label H.! A.class_ "form-check-label" $ "Deactivation"
                 H.button H.! A.class_ "btn btn-primary" $ "Submit"
+
+printerInfoFormView :: H.Html
+printerInfoFormView = baseView $ do
+    noBackgroundView $ do
+        buttonBar ["Home", "Print", "History", "System"]
+        ribbonView
+        contentSpacing $ do
+            H.h1 "Printer Info"
+            H.form H.! A.method "POST" H.! A.action "/AddPrinter" $ do
+                H.div H.! A.class_ "form-group" $ do
+                    H.label $ "Printer name"
+                    H.input H.! A.type_ "text" H.! A.class_ "form-control" H.! A.name "printer_name" H.! A.required "true"
+                    H.label $ "Printer location"
+                    H.input H.! A.type_ "text" H.! A.class_ "form-control" H.! A.name "printer_location" H.! A.required "true"
+                    H.button H.! A.class_ "btn btn-primary" $ "Submit"
 
 baffleView :: H.Html
 baffleView = baseView $ do
     noBackgroundView $ do
         contentSpacing $ do
-            H.h1 "Baffle"
+            H.h1 "Baffle, don't know where to go"
 
 -- Utility objects
 ribbonView :: H.Html

@@ -16,7 +16,9 @@ module Lib(
     historyRoute,
     authHandlerRoute,
     defaultRoute,
-    printerRoute) where
+    printerRoute,
+    updatePrinterRoute,
+    addPrinterRoute) where
 
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Web.Scotty
@@ -34,6 +36,7 @@ import qualified Data.Text.Lazy.Encoding as TLE
 import Model
 import View
 import Config (DatabaseType)
+import Default
 
 defaultRoute :: ScottyM ()
 defaultRoute = get "/" $ redirect "/home"
@@ -192,6 +195,35 @@ printerRoute ref = get "/Printer" $ do
 
     where 
         matched parameter data_point = printer_name data_point == parameter
+
+updatePrinterRoute :: IORef [PrinterData] -> ScottyM ()
+updatePrinterRoute ref = post "/UpdatePrinter" $ do
+    activation <- (formParam "activation" :: ActionM String)
+    target_name <- (queryParam "printer_name" :: ActionM String)
+    update_printer_data target_name $ toActivation activation
+    redirect "/Print"
+
+    where
+        toActivation "Activate" = True
+        toActivation _ = False
+        update_printer_data target_name activation = liftIO $ do
+            modifyIORef ref $ map $ update_func target_name activation
+        
+        update_func target_name activation datagram     | printer_name datagram == target_name = datagram{printer_activated = activation}
+                                                        | otherwise = datagram
+
+addPrinterRoute :: IORef [PrinterData] -> ScottyM ()
+addPrinterRoute ref = do 
+    get "/AddPrinter" $ do
+        html.renderHtml $ printerInfoFormView
+    post "/AddPrinter" $ do
+        target_printer_name <- (formParam "printer_name" :: ActionM String)
+        target_printer_location <- (formParam "printer_location" :: ActionM String)
+        liftIO $ modifyIORef ref $ update_func target_printer_name target_printer_location
+        redirect "/Print"
+    where
+        update_func name location = (defaultPrinterData{printer_name=name, printer_location=location}:)
+
 
 -- Utility
 
