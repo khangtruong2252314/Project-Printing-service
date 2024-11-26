@@ -30,10 +30,12 @@ debugView :: Show a => a -> H.Html
 debugView item = H.html $ H.text $ pack (show item)
 
 homeView :: H.Html 
-homeView = backgroundView $ do
+homeView = baseView.backgroundView $ do
     guestRibbonView
     contentSpacing $ do
-        H.h1 "Welcome to Smart Printing service system"
+
+        H.div H.! A.style "text-align: left;" $ do
+            "Welcome to the SPSO printing system"
 
 
 loginView :: H.Html 
