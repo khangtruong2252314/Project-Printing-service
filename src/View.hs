@@ -33,9 +33,13 @@ homeView :: H.Html
 homeView = baseView.backgroundView $ do
     guestRibbonView
     contentSpacing $ do
+        H.div H.! A.style "width: 752px; height: 274px; left: 0px; top: 225px; position: absolute" $ do 
+            H.div H.! A.style "width: 752px; height: 274px; left: 0px; top: 0px; position: absolute; opacity: 0.48; background: black" $ ""
+            H.div H.! A.style "left: 41px; top: 39px; position: absolute; color: white; font-size: 72px; font-family: Noto Sans Malayalam; font-weight: 700; word-wrap: break-word" $ do 
+                "Student smart"
+                H.br 
+                "Printing Service"
 
-        H.div H.! A.style "text-align: left;" $ do
-            "Welcome to the SPSO printing system"
 
 
 loginView :: H.Html 
