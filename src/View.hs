@@ -34,7 +34,7 @@ homeView = H.html $ do
         H.title "Smart Printing service system"
         H.body $ do 
             H.div H.! A.style "width: 100%; height: 100%; position: relative; background-image: url('https://lms.hcmut.edu.vn/pluginfile.php/3/theme_academi/slide1image/1725955904/slbk.jpg'); background-repeat: no-repeat;" $ do
-                H.div H.! A.style "width: 1440px; height: 128px; left: 0px; top: 0px; position: absolute;" $ do
+                H.div H.! A.style "width: 100%; height: 12%; margin: 0; position: relative" $ do
                     H.div H.! A.style "width: 1440px; height: 128px; left: 0px; top: 0px; position: absolute; background: #030391" $ ""
                     H.img H.! A.style "width: 82.26px; height: 96.28px; left: 26px; top: 10px; position: absolute" H.! A.src "https://lms.hcmut.edu.vn/pluginfile.php/3/theme_academi/logo/1725955904/logoBK.png"
                     H.div H.! A.style "width: 895px; height: 77px; left: 128px; top: 29px; position: absolute; color: white; font-size: 39px; font-family: Roboto; font-weight: 700; line-height: 24px; letter-spacing: 0.50px; word-wrap: break-word" $ "Ho Chi Minh University of Technology"
