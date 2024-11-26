@@ -18,7 +18,8 @@ module Lib(
     defaultRoute,
     printerRoute,
     updatePrinterRoute,
-    addPrinterRoute) where
+    addPrinterRoute,
+    purchaseRoute) where
 
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Web.Scotty
@@ -223,6 +224,11 @@ addPrinterRoute ref = do
         redirect "/Print"
     where
         update_func name location = (defaultPrinterData{printer_name=name, printer_location=location}:)
+
+
+purchaseRoute :: IORef (M.Map String UserData) -> ScottyM ()
+purchaseRoute _ = get "/Purchase" $ do
+    html.renderHtml $ baffleView
 
 
 -- Utility

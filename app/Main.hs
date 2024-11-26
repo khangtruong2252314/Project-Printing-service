@@ -34,3 +34,4 @@ main = do
         printerRoute printer_database
         updatePrinterRoute printer_database
         addPrinterRoute printer_database
+        purchaseRoute user_database

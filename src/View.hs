@@ -31,7 +31,7 @@ debugView item = H.html $ H.text $ pack (show item)
 
 homeView :: H.Html 
 homeView = baseView.backgroundView $ do
-    guestRibbonView
+    ribbonViewWithLogin
     contentSpacing $ do
         H.div H.! A.style "width: 752px; height: 274px; left: 0px; top: 225px; position: absolute" $ do 
             H.div H.! A.style "width: 752px; height: 274px; left: 0px; top: 0px; position: absolute; opacity: 0.48; background: black" $ ""
@@ -57,18 +57,18 @@ loginView = baseView $ do
                     H.button H.! A.class_ "btn btn-primary" $ "Submit"
 
 menuView :: Role -> H.Html
-menuView SPSO = H.html $ do
+menuView SPSO = baseView $ do
     backgroundView $ do
         ribbonView
         buttonBar ["Home", "Print", "History", "System"]
 
 
-menuView Student = H.html $ do
+menuView Student = baseView $ do
     backgroundView $ do
         ribbonView
         buttonBar ["Home", "Print", "History", "Purchase"]
 
-menuView Guest = H.html $ do
+menuView Guest = baseView $ do
     backgroundView $ do
         ribbonView
 
@@ -275,6 +275,16 @@ ribbonView = H.html $ do
             H.button H.! A.onclick "window.location.href = '/logout'" H.! A.style "left: 100px; top: 24px; position: absolute; color: white; font-size: 24px; font-family: Inter; font-weight: 400; word-wrap: break-word; background: #1488D8;" $ "Logout"
         H.img H.! A.style "width: 82.26px; height: 96.28px; left: 26px; top: 10px; position: absolute" H.! A.src "https://lms.hcmut.edu.vn/pluginfile.php/3/theme_academi/logo/1725955904/logoBK.png"
         H.div H.! A.style "width: 895px; height: 77px; left: 128px; top: 29px; position: absolute; color: white; font-size: 39px; font-family: Roboto; font-weight: 700; line-height: 24px; letter-spacing: 0.50px; word-wrap: break-word" $ "Ho Chi Minh University of Technology"
+
+ribbonViewWithLogin :: H.Html
+ribbonViewWithLogin = H.html $ do
+    H.div H.! A.style "width: 1440px; height: 128px; left: 0px; top: 0px; position: absolute" $ do
+        H.div H.! A.style "width: 1550px; height: 128px; left: 0px; top: 0px; position: absolute; background: #030391" $ ""
+        H.div H.! A.style "width: 79px; height: 83px; left: 1249px; top: 23px; position: absolute; background: #030391" H.! A.onclick "window.location.href = '/login'" $ do 
+            H.a H.! A.href "/login" H.! A.style "left: 100px; top: 24px; position: absolute; color: white; font-size: 24px; font-family: Inter; font-weight: 400; word-wrap: break-word; background: #030391;" $ "Login"
+        H.img H.! A.style "width: 82.26px; height: 96.28px; left: 26px; top: 10px; position: absolute" H.! A.src "https://lms.hcmut.edu.vn/pluginfile.php/3/theme_academi/logo/1725955904/logoBK.png"
+        H.div H.! A.style "width: 895px; height: 77px; left: 128px; top: 29px; position: absolute; color: white; font-size: 39px; font-family: Roboto; font-weight: 700; line-height: 24px; letter-spacing: 0.50px; word-wrap: break-word" $ "Ho Chi Minh University of Technology"
+
 
 guestRibbonView :: H.Html
 guestRibbonView = H.html $ do
