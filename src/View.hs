@@ -28,7 +28,7 @@ import Model
 
 -- Pages
 debugView :: Show a => a -> H.Html
-debugView item = H.html $ H.text $ pack (show item)
+debugView item = H.html . H.text.pack.show $ item
 
 homeView :: H.Html 
 homeView = baseView.backgroundView $ do
@@ -40,7 +40,6 @@ homeView = baseView.backgroundView $ do
                 "Student smart"
                 H.br 
                 "Printing Service"
-
 
 
 loginView :: H.Html 
