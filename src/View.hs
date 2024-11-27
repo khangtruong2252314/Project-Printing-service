@@ -182,16 +182,17 @@ paperManagementSuccessView number datetime = baseView $ do
             H.h6 $ "Pages number: " <> (H.toHtml.pack.show $ number)
             H.h6 $ "Next providing date: " <> (H.toHtml.pack $ datetime)
 
-printFieldView :: String -> Int -> UserData -> H.Html
-printFieldView file pages user_data = baseView $ do
+printFieldView :: FileData -> UserData -> H.Html
+printFieldView file user_data = baseView $ do
     noBackgroundView $ do
         buttonBar ["Home", "Print", "History", "Purchase"]
         ribbonView
         contentSpacing $ do
             H.h1 "Print files"
-            H.h6 $ "File: " <> (H.toHtml.pack $ file)
+            H.h6 $ "File: " <> (H.toHtml.pack.file_name $ file)
             H.h6 $ "Account balance: " <> (H.toHtml.pack.show $ account_balance user_data)
-            H.form H.! A.method "POST" H.! A.action ("/PrintingSuccess?path=" <> (H.toValue.pack $ file) <> "&&num_page=" <> (H.toValue $ pages)) $ do
+            H.h6 $ "Pages number: " <> (H.toHtml.pack.show.numPages $ file)
+            H.form H.! A.method "POST" H.! A.action ("/PrintingSuccess?path=" <> (H.toValue.pack.file_name $ file) <> "&&num_page=" <> (H.toValue.pack.show.numPages $ file)) $ do
                 H.div H.! A.class_ "form-group" $ do
                     H.label $ "Number of copies"
                     H.input H.! A.type_ "number" H.! A.class_ "form-control" H.! A.name "copies"

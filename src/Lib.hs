@@ -61,8 +61,8 @@ managePrinterRoute ref = do
 
 printingRoute :: IORef [FileData] -> ActionM ()
 printingRoute ref = do
-    filenames <- liftIO $ readIORef ref
-    html.renderHtml $ fileManagementView filenames
+    filedata <- liftIO $ readIORef ref
+    html.renderHtml $ fileManagementView filedata
 
 printRoute :: IORef [PrinterData] -> IORef [FileData] -> ScottyM ()
 printRoute ref_printer ref_file = get "/Print" $ do
@@ -136,7 +136,7 @@ printFieldRoute userRef fileRef = get "/PrintField/:path" $ do
     where
         direct [] _ _ = redirect "/Print"
         direct _ Nothing _ = redirect "/Print"
-        direct (target:_) (Just name) db    | M.member (unpack name) db = html.renderHtml $ printFieldView (file_name target) (numPages target) (db M.! unpack name)
+        direct (target:_) (Just name) db    | M.member (unpack name) db = html.renderHtml $ printFieldView target (db M.! unpack name)
                                             | otherwise = redirect "/Print"
     
 
