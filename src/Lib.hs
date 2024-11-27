@@ -227,8 +227,23 @@ addPrinterRoute ref = do
 
 
 purchaseRoute :: IORef (M.Map String UserData) -> ScottyM ()
-purchaseRoute _ = get "/Purchase" $ do
-    html.renderHtml $ baffleView
+purchaseRoute ref = do 
+    get "/Purchase" $ do
+        html.renderHtml $ do
+            purchaseView
+    
+    post "/Purchase" $ do
+        amount <- (formParam "amount" :: ActionM Int)
+        maybe_username <- getCookie "username"
+        case maybe_username of
+            Nothing -> redirect "/login"
+            Just username -> do
+                liftIO.modifyIORef ref $ adjustBalance amount $ unpack username
+                redirect "/Print"
+    
+    where 
+        adjustBalance amount username database = M.insert username (M.findWithDefault defaultUserData username database) {account_balance = account_balance (M.findWithDefault defaultUserData username database) + amount} database
+
 
 
 -- Utility

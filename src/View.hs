@@ -15,7 +15,8 @@ module View (
     historyView,
     printerView,
     baffleView,
-    printerInfoFormView) where
+    printerInfoFormView,
+    purchaseView) where
 
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as A
@@ -257,6 +258,19 @@ printerInfoFormView = baseView $ do
                     H.input H.! A.type_ "text" H.! A.class_ "form-control" H.! A.name "printer_name" H.! A.required "true"
                     H.label $ "Printer location"
                     H.input H.! A.type_ "text" H.! A.class_ "form-control" H.! A.name "printer_location" H.! A.required "true"
+                    H.button H.! A.class_ "btn btn-primary" $ "Submit"
+
+purchaseView :: H.Html
+purchaseView = baseView $ do
+    noBackgroundView $ do
+        buttonBar ["Home", "Print", "History", "Purchase"]
+        ribbonView
+        contentSpacing $ do
+            H.h1 "Purchase"
+            H.form H.! A.method "POST" H.! A.action "/Purchase" $ do
+                H.div H.! A.class_ "form-group" $ do
+                    H.label $ "Amount"
+                    H.input H.! A.type_ "number" H.! A.class_ "form-control" H.! A.name "amount" H.! A.required "true"
                     H.button H.! A.class_ "btn btn-primary" $ "Submit"
 
 baffleView :: H.Html
