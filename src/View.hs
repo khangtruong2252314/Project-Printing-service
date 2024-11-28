@@ -182,8 +182,8 @@ paperManagementSuccessView number datetime = baseView $ do
             H.h6 $ "Pages number: " <> (H.toHtml.pack.show $ number)
             H.h6 $ "Next providing date: " <> (H.toHtml.pack $ datetime)
 
-printFieldView :: FileData -> UserData -> H.Html
-printFieldView file user_data = baseView $ do
+printFieldView :: [PrinterData] -> FileData -> UserData -> H.Html
+printFieldView printers file user_data = baseView $ do
     noBackgroundView $ do
         buttonBar ["Home", "Print", "History", "Purchase"]
         ribbonView
@@ -196,7 +196,17 @@ printFieldView file user_data = baseView $ do
                 H.div H.! A.class_ "form-group" $ do
                     H.label $ "Number of copies"
                     H.input H.! A.type_ "number" H.! A.class_ "form-control" H.! A.name "copies"
+                    H.label $ "Select a printer"
+                    select_elem
                     H.button H.! A.class_ "btn btn-primary" $ "Submit"
+    
+    where
+        select_elem = do
+            H.select H.! A.class_ "form-select" H.! A.name "printer_selection" $ do
+                H.option H.! A.value "" $ "Select a printer"
+                mapM_ option_elem $ filter printer_activated printers
+        
+        option_elem printer_data = H.option H.! A.value (H.toValue.printer_name $ printer_data) $ H.toHtml.printer_name $ printer_data
 
 printSuccessView :: H.Html
 printSuccessView = baseView $ do
@@ -334,7 +344,7 @@ baseView :: H.Html -> H.Html
 baseView inner = do
     H.html $ do
         H.head $ do
-            H.link H.! A.rel "stylesheet" H.! A.href "https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+            H.link H.! A.rel "stylesheet" H.! A.href "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
             H.script H.! A.src "https://code.jquery.com/jquery-3.3.1.slim.min.js" $ ""
         H.body $ do
             inner

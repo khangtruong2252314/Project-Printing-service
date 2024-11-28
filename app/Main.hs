@@ -27,7 +27,7 @@ main = do
         paperManagementFormRoute database 
         uploadFileFormRoute file_database
         uploadFileRoute
-        printFieldRoute user_database file_database
+        printFieldRoute printer_database user_database file_database
         printingSuccessRoute user_database print_database
         historyRoute print_database
         authHandlerRoute user_database

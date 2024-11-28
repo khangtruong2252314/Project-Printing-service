@@ -124,20 +124,21 @@ logoutRoute = get "/logout" $ do
     deleteCookie "role"
     redirect "/login"
 
-printFieldRoute :: IORef (M.Map String UserData) -> IORef [FileData] -> ScottyM ()
-printFieldRoute userRef fileRef = get "/PrintField/:path" $ do 
+printFieldRoute :: IORef [PrinterData] -> IORef (M.Map String UserData) -> IORef [FileData] -> ScottyM ()
+printFieldRoute printerRef userRef fileRef = get "/PrintField/:path" $ do 
     path <- (captureParam "path" :: ActionM String)
     maybe_username <- getCookie "username"
     user_map <- liftIO $ readIORef userRef
     file_list <- liftIO $ readIORef fileRef
+    printers <- liftIO $ readIORef printerRef
     let foundFiles = filter ((== path).file_name) file_list
-    direct foundFiles maybe_username user_map
+    direct printers foundFiles maybe_username user_map
     
     where
-        direct [] _ _ = redirect "/Print"
-        direct _ Nothing _ = redirect "/Print"
-        direct (target:_) (Just name) db    | M.member (unpack name) db = html.renderHtml $ printFieldView target (db M.! unpack name)
-                                            | otherwise = redirect "/Print"
+        direct _ [] _ _ = redirect "/Print"
+        direct _ _ Nothing _ = redirect "/Print"
+        direct printers (target:_) (Just name) db       | M.member (unpack name) db = html.renderHtml $ printFieldView printers target (db M.! unpack name)
+                                                        | otherwise = redirect "/Print"
     
 
 printingSuccessRoute :: IORef (M.Map String UserData) -> IORef [PrintData] -> ScottyM ()
