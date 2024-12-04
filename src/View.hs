@@ -216,22 +216,28 @@ printSuccessView = baseView $ do
         contentSpacing $ do
             H.h1 "Printing Success"
 
-historyView :: [PrintData] -> H.Html
-historyView print_list = baseView $ do
+historyView :: Role -> [PrintData] -> H.Html
+historyView role print_list = baseView $ do
     noBackgroundView $ do
-        buttonBar ["Home", "Print", "History", "Purchase"]
+        buttonBar buttonBarForRole
         ribbonView
         contentSpacing $ do
             H.h1 "History"
             H.table H.! A.class_ "table" $ do
                 H.tr $ do
+                    H.td $ "Username"
                     H.td $ "File"
                     H.td $ "Print time"
                     H.td $ "Copies"
                 concatM [\_ -> itemDiv print_data | print_data <- print_list] ()
         
         where 
+            buttonBarForRole = case role of
+                Student -> ["Home", "Print", "History", "Purchase"]
+                SPSO -> ["Home", "Print", "History", "System"]
+                _ -> []
             itemDiv print_data = H.tr $ do
+                H.td . H.toHtml . pack $ "demo_student"
                 H.td $ H.toHtml $ filepath print_data
                 H.td $ H.toHtml $ printTime print_data
                 H.td $ H.toHtml $ numCopies print_data

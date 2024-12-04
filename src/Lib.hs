@@ -164,7 +164,13 @@ printingSuccessRoute user_ref history_ref = post "/PrintingSuccess" $ do
 historyRoute :: IORef [PrintData] -> ScottyM ()
 historyRoute ref = get "/History" $ do
     data_ <- liftIO $ readIORef ref
-    html.renderHtml $ historyView data_
+    maybeRole <- getCookie "role"
+    html.renderHtml $ historyView (roleFromMaybeRole maybeRole) $ data_
+
+    where 
+        roleFromMaybeRole maybe_role = case maybe_role of
+            Nothing -> Guest
+            Just role -> toRole.unpack $ role
 
 authHandlerRoute :: IORef (M.Map String UserData) -> ScottyM ()
 authHandlerRoute ref = post "/Auth" $ do
