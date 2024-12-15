@@ -2,8 +2,29 @@
 
 ## To run this, the user need to have GHC 9.6.6 and STACK.
 
-#### Entry point: stack run
+#### Entry point: 
+```console
+foo@bar:~$ stack run
+```
+
 Go to localhost:3000 to see what you've got
+
+#### Folder structure
+```
+.
+└─── app
+|    |    Main.hs         --- Main file
+|    
+└─── src
+     |    Database.hs     --- Simulate database file
+     |    Default.hs      --- Provide initialized data
+     |    Lib.hs          --- Provide controller functions
+     |    Model.hs        --- Provide data format for controllers and views
+     |    View.hs         --- Provide code for user interfaces    
+
+```
+
+
 ![image](https://github.com/user-attachments/assets/e3524230-d84a-4ee7-ab2d-0ba886a200e0)
 ![image](https://github.com/user-attachments/assets/f0ed82a8-5eaa-4808-8a02-b993764482ec)
 ![image](https://github.com/user-attachments/assets/ef05cd0b-27e1-4402-a2ad-9f9f9a11db00)
